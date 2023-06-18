@@ -8,6 +8,7 @@ from io import BytesIO
 from pathlib import Path
 
 
+
 def get_top_emotions(emotions: List[Dict[str, Any]]) -> None:
     emotion_map = {e["name"]: e["score"] for e in emotions}
     # for emotion in emotion_map:
