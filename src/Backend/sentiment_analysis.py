@@ -12,7 +12,7 @@ def get_top_emotions(emotions: List[Dict[str, Any]]) -> None:
     emotion_map = {e["name"]: e["score"] for e in emotions}
     # for emotion in emotion_map:
     #     print(f"- {emotion}: {emotion_map[emotion]:4f}")
-    sorted_emotion_map = sorted(emotion_map, key=emotion_map.get, reverse=True)[:3]
+    sorted_emotion_map = sorted(emotion_map.items(), key=lambda x: x[1], reverse=True)[:3]
     return sorted_emotion_map
 
 def start_audio_sentiment_analysis_job(file_path):
@@ -99,5 +99,3 @@ def analyze_sentiment(file_path):
        "prosody": prosody,
        "burst": burst
     }
-
-print(analyze_sentiment("src/Backend/temp_bin/react-webcam-stream-capture.webm"))

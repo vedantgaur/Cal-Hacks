@@ -1,8 +1,8 @@
 import os
 import openai
 
-from embeddings import Expression2Text
-
+from embeddings import get_prompt
+import sentiment_analysis
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -21,12 +21,7 @@ def completion(input: str):
 
     return completion
 
-def response(transcript: str, hume_output) -> str:
-    return completion(input=
-    f"""
-    {Expression2Text(hume_output)}
+def response(hume_output, code="") -> str:
+    return completion(input=get_prompt(hume_output))
 
-    {transcript}
-    """
-    )
-
+response(sentiment_analysis.analyze_sentiment("src/Backend/temp_bin/react-webcam-stream-capture.webm"))
