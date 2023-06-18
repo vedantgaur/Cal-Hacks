@@ -1,41 +1,20 @@
-
 import './App.css';
 import Navbar from './Navbar';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import Webcam from "react-webcam";
+import AWS from 'aws-sdk';
 
-//const WebcamComponent = () => <Webcam />;
+// Configure AWS SDK
+AWS.config.update({
+  accessKeyId: 'YOUR_AWS_ACCESS_KEY_ID',
+  secretAccessKey: 'YOUR_AWS_SECRET_ACCESS_KEY',
+  region: 'YOUR_AWS_REGION',
+});
 
-function  App() {
+const s3 = new AWS.S3();
 
-/* const videoRef = useRef(null)
-
-const photoRef = useRef(null)
-
-const getUserCamera = () =>{
-  navigator.mediaDevices.getUserMedia({
-    videeo:true
-  })
-  .then((stream) => {
-    let video = videoRef.current
-    
-    video.srcObject = stream
-
-    video.play()
-    
-  })
-  .catch((error)=>{
-    console.log(error)
-  })
-
-}
-
-useEffect(() =>{
-  getUserCamera()
-}, [videoRef]) */
-
-
-const webcamRef = useRef(null);
+function App() {
+  const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const [capturing, setCapturing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState([]);
@@ -66,19 +45,33 @@ const webcamRef = useRef(null);
     setCapturing(false);
   }, [mediaRecorderRef, setCapturing]);
 
-  const handleDownload = useCallback(() => {
+  const handleUpload = useCallback(() => {
     if (recordedChunks.length) {
       const blob = new Blob(recordedChunks, {
         type: "video/webm",
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      document.body.appendChild(a);
-      a.style = "display: none";
-      a.href = url;
-      a.download = "react-webcam-stream-capture.webm";
-      a.click();
-      window.URL.revokeObjectURL(url);
+
+      // Generate a unique file name
+      const fileName = `audio_${Date.now()}.webm`;
+
+      // Specify the S3 bucket and key
+      const params = {
+        Bucket: 'YOUR_S3_BUCKET_NAME',
+        Key: fileName,
+        Body: blob,
+        ACL: 'public-read', // Adjust the ACL as needed
+      };
+
+      // Upload the file to S3
+      s3.upload(params, (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("File uploaded successfully:", data.Location);
+          // Trigger your Lambda function here with the S3 file URL (data.Location)
+        }
+      });
+
       setRecordedChunks([]);
     }
   }, [recordedChunks]);
@@ -95,24 +88,35 @@ const webcamRef = useRef(null);
     echoCancellation: true,
   };
 
-
   return (
     <div className="App">
-      <Navbar/>
-      <div className = "interview">
-        <Webcam className = "webCam" ref={webcamRef} audio = {true} videoConstraints={videoConstraints} audioConstraints={audioConstraints}  mirrored = {true} muted={true}/>
-                <div className="buttons">
-                    {capturing ? (
-                      <button className = "vidButtons" onClick={handleStopCaptureClick}>Stop Capture</button>
-                    ) : (
-                      <button className = "vidButtons" onClick={handleStartCaptureClick}>Start Capture</button>
-                    )}
-                    {recordedChunks.length > 0 && (
-                      <button onClick={handleDownload}>Download</button>
-                    )}
-                  </div>
+      <Navbar />
+      <div className="interview">
+        <Webcam
+          className="webCam"
+          ref={webcamRef}
+          audio={true}
+          videoConstraints={videoConstraints}
+          audioConstraints={audioConstraints}
+          mirrored={true}
+          muted={true}
+        />
+        <div className="buttons">
+          {capturing ? (
+            <button className="vidButtons" onClick={handleStopCaptureClick}>
+              Stop Capture
+            </button>
+          ) : (
+            <button className="vidButtons" onClick={handleStartCaptureClick}>
+              Start Capture
+            </button>
+          )}
+          {recordedChunks.length > 0 && (
+            <button onClick={handleUpload}>Upload</button>
+          )}
+        </div>
 
-        <div className = "avatarBox">
+        <div className="avatarBox">
           <h1>avatar box</h1>
         </div>
       </div>
