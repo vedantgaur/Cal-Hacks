@@ -22,6 +22,6 @@ def completion(input: str):
     return completion
 
 def response(hume_output, code="") -> str:
-    return completion(input=get_prompt(hume_output))
+    return completion(input=get_prompt(hume_output, code))
 
-response(sentiment_analysis.analyze_sentiment("src/Backend/temp_bin/react-webcam-stream-capture.webm"))
+print(response(sentiment_analysis.analyze_sentiment("src/Backend/temp_bin/react-webcam-stream-capture.webm")))
