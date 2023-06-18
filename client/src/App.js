@@ -89,13 +89,18 @@ const webcamRef = useRef(null);
     facingMode: "user",
   };
 
+  const audioConstraints = {
+    suppressLocalAudioPlayback: true,
+    noiseSuppression: true,
+    echoCancellation: true,
+  };
 
 
   return (
     <div className="App">
       <Navbar/>
       <div className = "interview">
-        <Webcam className = "webCam"ref={webcamRef} videoConstraints={videoConstraints} saudio = {true} mirrored = {true}/>
+        <Webcam className = "webCam" ref={webcamRef} audio = {true} videoConstraints={videoConstraints} audioConstraints={audioConstraints}  mirrored = {true} muted={true}/>
                 <div className="buttons">
                     {capturing ? (
                       <button className = "vidButtons" onClick={handleStopCaptureClick}>Stop Capture</button>
